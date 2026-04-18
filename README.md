@@ -72,8 +72,35 @@ The system provides real-time updates and integrates all modules into a single p
 ### Database
 - Prisma ORM
 
+
 ---
 
 ## ⚙️ Installation & Setup
 
 ### Backend Setup
+## 📷 Screenshots
+
+### Dashboard
+![Dashboard](screenshots/dashboard.png)
+
+### Employees
+![Employees](screenshots/employees.png)
+
+### Products
+![Products](screenshots/products.png)
+
+### Attendance
+![Attendance](screenshots/attendance.png)
+
+### Leave
+![Leave](screenshots/leave.png)
+
+### Orders
+![Orders](screenshots/orders.png)
+
+### Reports
+![Reports](screenshots/reports.png)
+
+## ✅ Conclusion
+
+This ERP system successfully integrates multiple business modules into a single platform. It demonstrates full-stack development skills, API integration, database handling, and real-time data management.
