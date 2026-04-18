@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Employee {
+  id            Int            @id @default(autoincrement())
+  name          String
+  role          String
+  attendance    Attendance[]
+  leaveRequests LeaveRequest[]
+}
+
+model Attendance {
+  id         Int      @id @default(autoincrement())
+  employeeId Int
+  date       DateTime
+  status     String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+model LeaveRequest {
+  id         Int      @id @default(autoincrement())
+  employeeId Int
+  leaveType  String
+  startDate  DateTime
+  endDate    DateTime
+  status     String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+model Product {
+  id           Int     @id @default(autoincrement())
+  name         String
+  price        Float
+  quantity     Int     @default(0)
+  reorderLevel Int     @default(5)
+  orders       Order[]
+}
+model Order {
+  id          Int      @id @default(autoincrement())
+  productId   Int
+  quantity    Int
+  totalAmount Float
+  orderDate   DateTime
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
