@@ -81,7 +81,44 @@ The system provides real-time updates and integrates all modules into a single p
 - Leave summary
 - Sales summary
 - Payroll summary
+---
 
+## 📷 Screenshots
+
+### Dashboard
+![Dashboard](screenshots/dashboard.png)
+
+### Employees
+![Employees](screenshots/employees.png)
+
+### Products
+![Products](screenshots/products.png)
+
+### Attendance
+![Attendance](screenshots/attendance.png)
+
+### Leave
+![Leave](screenshots/leave.png)
+
+### Orders
+![Orders](screenshots/orders.png)
+
+### Payroll
+![Payroll](screenshots/payroll.png)
+
+### Projects
+![Projects](screenshots/projects.png)
+
+### Notifications
+![Notifications](screenshots/notifications.png)
+
+### Audit Logs
+![Audit Logs](screenshots/audit.png)
+
+### Reports
+![Reports](screenshots/reports.png)
+
+---
 
 ## 🎥 Demo Video
 [Watch Demo Video](https://drive.google.com/file/d/12g1js7AObNIlW4wEZZPctGi8LABWuaCk/view?usp=drive_link)
