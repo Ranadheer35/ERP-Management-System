@@ -61,6 +61,8 @@ const [projectDesc, setProjectDesc] = useState("");
 const [projectBudget, setProjectBudget] = useState("");
 const [projectStatus, setProjectStatus] = useState("Planned");
 
+const [auditLogs, setAuditLogs] = useState([]);
+
   // ================= EMPLOYEES =================
   const fetchEmployees = () => {
     fetch("http://localhost:5000/employees")
@@ -600,6 +602,18 @@ const deleteProject = (id) => {
       .catch((err) => console.log("Error fetching notifications:", err));
   };
   
+  const fetchAuditLogs = () => {
+  fetch("http://localhost:5000/audit-logs")
+    .then((res) => res.json())
+    .then((data) => {
+      if (Array.isArray(data)) {
+        setAuditLogs(data);
+      } else {
+        setAuditLogs([]);
+      }
+    })
+    .catch((err) => console.log("Error fetching logs:", err));
+};
 
   // ================= LOGIN =================
   const handleLogin = (e) => {
@@ -622,6 +636,7 @@ const deleteProject = (id) => {
     fetchPayroll();
     fetchProjects();
     fetchNotifications();
+    fetchAuditLogs();
   }, []);
 
   // ================= DERIVED DATA =================
@@ -718,6 +733,7 @@ const deleteProject = (id) => {
             <li onClick={() => setPage("payroll")}>Payroll</li>
             <li onClick={() => setPage("projects")}>Projects</li>
             <li onClick={() => setPage("notifications")}>Notifications</li>
+            <li onClick={() => setPage("audit")}>Audit Logs</li>
           </ul>
 
           <button className="logout-btn" onClick={() => setIsLoggedIn(false)}>
@@ -794,6 +810,7 @@ const deleteProject = (id) => {
               )}
             </>
           )}
+          
 
           {page === "employees" && (
             <>
@@ -1272,6 +1289,40 @@ const deleteProject = (id) => {
               )}
             </>
           )}
+{page === "audit" && (
+  <>
+    <h1>Audit Logs</h1>
+    <p className="page-note">Track system activity and changes.</p>
+
+    {auditLogs.length === 0 ? (
+      <p className="empty-text">No logs found.</p>
+    ) : (
+      <table>
+        <thead>
+          <tr>
+            <th>Action</th>
+            <th>Entity</th>
+            <th>Details</th>
+            <th>Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          {auditLogs.map((log) => (
+            <tr key={log.id}>
+              <td>{log.action}</td>
+              <td>{log.entity}</td>
+              <td>{log.details}</td>
+              <td>
+                {new Date(log.createdAt).toLocaleString()}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )}
+  </>
+)}
+
           {page === "projects" && (
   <>
     <h1>Project Management</h1>

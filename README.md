@@ -1,7 +1,7 @@
 # ERP Management System
 
 ## 📌 Overview
-This is a full-stack ERP (Enterprise Resource Planning) system developed to manage business operations like employees, inventory, attendance, leave management, and sales.
+This is a full-stack ERP (Enterprise Resource Planning) system developed to manage business operations like employees, inventory, attendance, leave management, payroll, projects, notifications, audit logs, reports, and sales.
 
 The system provides real-time updates and integrates all modules into a single platform.
 
@@ -10,69 +10,82 @@ The system provides real-time updates and integrates all modules into a single p
 ## 🚀 Features
 
 ### 🔐 Authentication
-- Simple login system to access the application
+- Simple login system to access ERP dashboard
 
 ### 📊 Dashboard
-- Displays:
-  - Total employees
-  - Total products
-  - Low stock alerts
-  - Attendance summary
-  - Sales summary
+- Employees count
+- Products count
+- Low stock alerts
+- Attendance summary
+- Sales summary
+- Payroll summary
+- Notifications count
+- Audit log tracking
 
 ### 👨‍💼 Employee Management
-- Add, update, delete employees
-- Search and sort functionality
+- Add employees
+- Update employees
+- Delete employees
+- Search employees
+- Sort employees
 
 ### 📦 Inventory Management
-- Add products with:
-  - Price
-  - Quantity
-  - Reorder level
-- Automatic low stock detection
+- Add products with price, quantity, and reorder level
+- Update products
+- Delete products
+- Low stock detection
+- Stock status display
 
-### 🕒 Attendance Management
-- Mark attendance:
-  - Present
-  - Absent
-  - Leave
+### 🕒 Attendance
+- Mark employee attendance
+- Present / Absent / Leave status
 - View attendance records
 
 ### 📝 Leave Management
 - Apply leave requests
-- Track status:
-  - Pending
-  - Approved
-  - Rejected
+- Track leave status
+- Pending / Approved / Rejected status
 
 ### 💰 Orders / Sales
-- Create orders
-- Automatic stock reduction
-- Prevents ordering when stock is insufficient
+- Create sales orders
+- Auto stock reduction after order
+- Prevent orders when stock is insufficient
+- View order history
 
-### 📈 Reports
-- View:
-  - Inventory summary
-  - Attendance summary
-  - Leave summary
-  - Sales summary
+### 💵 Payroll
+- Add employee payroll
+- Base salary, bonus, and deduction
+- Net salary calculation
+- View payroll records
 
 ### 📁 Project Management
-- Create and manage projects
-- Track budget and status
+- Add projects
+- Manage project budget
+- Track project status
 - Delete projects
 
-## 🔗 API Endpoints
+### 🔔 Notifications
+- Low stock alerts
+- Pending leave alerts
+- Recent order notifications
+- Payroll-related alerts
 
-- /employees
-- /products
-- /attendance
-- /leave-requests
-- /orders
-- /payroll
-- /projects
-- /notifications
-- /audit-logs
+### 🧾 Audit Logs
+- Track system actions
+- Store activity logs
+- View create, update, and delete actions
+
+### 📈 Reports
+- Inventory summary
+- Attendance summary
+- Leave summary
+- Sales summary
+- Payroll summary
+
+
+## 🎥 Demo Video
+[Watch Demo Video](https://drive.google.com/file/d/12g1js7AObNIlW4wEZZPctGi8LABWuaCk/view?usp=drive_link)
+
 ---
 
 ## 🛠️ Technologies Used
@@ -87,6 +100,21 @@ The system provides real-time updates and integrates all modules into a single p
 
 ### Database
 - Prisma ORM
+- PostgreSQL / SQLite
+
+---
+
+## 🔗 API Endpoints
+
+- `/employees`
+- `/products`
+- `/attendance`
+- `/leave-requests`
+- `/orders`
+- `/payroll`
+- `/projects`
+- `/notifications`
+- `/audit-logs`
 
 ---
 
