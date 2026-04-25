@@ -6,6 +6,7 @@ function App() {
   const [password, setPassword] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [page, setPage] = useState("dashboard");
+  const [notifications, setNotifications] = useState([]);
 
   // Employee states
   const [employees, setEmployees] = useState([]);
@@ -45,6 +46,20 @@ function App() {
   const [selectedProductId, setSelectedProductId] = useState("");
   const [orderQuantity, setOrderQuantity] = useState("");
   const [orderDate, setOrderDate] = useState("");
+
+  // Payroll states
+  const [payrollRecords, setPayrollRecords] = useState([]);
+  const [payrollEmployeeId, setPayrollEmployeeId] = useState("");
+  const [payrollMonth, setPayrollMonth] = useState("");
+  const [baseSalary, setBaseSalary] = useState("");
+  const [bonus, setBonus] = useState("");
+  const [deduction, setDeduction] = useState("");
+
+  const [projects, setProjects] = useState([]);
+const [projectName, setProjectName] = useState("");
+const [projectDesc, setProjectDesc] = useState("");
+const [projectBudget, setProjectBudget] = useState("");
+const [projectStatus, setProjectStatus] = useState("Planned");
 
   // ================= EMPLOYEES =================
   const fetchEmployees = () => {
@@ -111,6 +126,7 @@ function App() {
         fetchEmployees();
         fetchAttendance();
         fetchLeaveRequests();
+        fetchNotifications();
       })
       .catch((err) => console.log("Error deleting employee:", err));
   };
@@ -168,6 +184,7 @@ function App() {
         .then((res) => res.json())
         .then(() => {
           fetchProducts();
+          fetchNotifications();
           setEditProductId(null);
           setProductName("");
           setProductPrice("");
@@ -189,6 +206,7 @@ function App() {
       .then((res) => res.json())
       .then(() => {
         fetchProducts();
+        fetchNotifications();
         setProductName("");
         setProductPrice("");
         setProductQuantity("");
@@ -205,6 +223,7 @@ function App() {
       .then(() => {
         fetchProducts();
         fetchOrders();
+        fetchNotifications();
       })
       .catch((err) => console.log("Error deleting product:", err));
   };
@@ -323,6 +342,7 @@ function App() {
         .then((res) => res.json())
         .then(() => {
           fetchLeaveRequests();
+          fetchNotifications();
           setEditLeaveId(null);
           setLeaveEmployeeId("");
           setLeaveType("Sick Leave");
@@ -344,6 +364,7 @@ function App() {
       .then((res) => res.json())
       .then(() => {
         fetchLeaveRequests();
+        fetchNotifications();
         setLeaveEmployeeId("");
         setLeaveType("Sick Leave");
         setLeaveStartDate("");
@@ -358,7 +379,10 @@ function App() {
       method: "DELETE",
     })
       .then((res) => res.json())
-      .then(() => fetchLeaveRequests())
+      .then(() => {
+        fetchLeaveRequests();
+        fetchNotifications();
+      })
       .catch((err) => console.log("Error deleting leave request:", err));
   };
 
@@ -415,6 +439,7 @@ function App() {
         }
         fetchOrders();
         fetchProducts();
+        fetchNotifications();
         setSelectedProductId("");
         setOrderQuantity("");
         setOrderDate("");
@@ -430,9 +455,151 @@ function App() {
       .then(() => {
         fetchOrders();
         fetchProducts();
+        fetchNotifications();
       })
       .catch((err) => console.log("Error deleting order:", err));
   };
+
+  // ================= PAYROLL =================
+  const fetchPayroll = () => {
+    fetch("http://localhost:5000/payroll")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setPayrollRecords(data);
+        } else {
+          setPayrollRecords([]);
+        }
+      })
+      .catch((err) => console.log("Error fetching payroll:", err));
+  };
+
+  const addPayroll = () => {
+    if (
+      !payrollEmployeeId ||
+      !payrollMonth ||
+      !baseSalary ||
+      bonus === "" ||
+      deduction === ""
+    ) {
+      alert("Fill all payroll fields");
+      return;
+    }
+
+    fetch("http://localhost:5000/payroll", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        employeeId: Number(payrollEmployeeId),
+        month: payrollMonth,
+        baseSalary: Number(baseSalary),
+        bonus: Number(bonus),
+        deduction: Number(deduction),
+      }),
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) {
+          alert(data.message || "Error adding payroll");
+          return null;
+        }
+        return data;
+      })
+      .then((data) => {
+        if (!data) return;
+        fetchPayroll();
+        fetchNotifications();
+        setPayrollEmployeeId("");
+        setPayrollMonth("");
+        setBaseSalary("");
+        setBonus("");
+        setDeduction("");
+        alert("Payroll added successfully");
+      })
+      .catch((err) => console.log("Error adding payroll:", err));
+  };
+
+  const deletePayroll = (id) => {
+    fetch(`http://localhost:5000/payroll/${id}`, {
+      method: "DELETE",
+    })
+      .then((res) => res.json())
+      .then(() => {
+        fetchPayroll();
+        fetchNotifications();
+      })
+      .catch((err) => console.log("Error deleting payroll:", err));
+  };
+
+  // ================= PROJECTS =================
+const fetchProjects = () => {
+  fetch("http://localhost:5000/projects")
+    .then((res) => res.json())
+    .then((data) => {
+      if (Array.isArray(data)) {
+        setProjects(data);
+      } else {
+        setProjects([]);
+      }
+    })
+    .catch((err) => console.log("Error fetching projects:", err));
+};
+
+const addProject = () => {
+  if (!projectName || !projectDesc || !projectBudget || !projectStatus) {
+    alert("Fill all project fields");
+    return;
+  }
+
+  fetch("http://localhost:5000/projects", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name: projectName,
+      description: projectDesc,
+      budget: Number(projectBudget),
+      status: projectStatus,
+    }),
+  })
+    .then((res) => res.json())
+    .then(() => {
+      fetchProjects();
+      setProjectName("");
+      setProjectDesc("");
+      setProjectBudget("");
+      setProjectStatus("Planned");
+    })
+    .catch((err) => console.log("Error adding project:", err));
+};
+
+const deleteProject = (id) => {
+  fetch(`http://localhost:5000/projects/${id}`, {
+    method: "DELETE",
+  })
+    .then(() => {
+      fetchProjects();
+    })
+    .catch((err) => console.log("Error deleting project:", err));
+};
+
+  // ================= NOTIFICATIONS =================
+  const fetchNotifications = () => {
+    fetch("http://localhost:5000/notifications")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setNotifications(data);
+        } else {
+          setNotifications([]);
+        }
+      })
+      .catch((err) => console.log("Error fetching notifications:", err));
+  };
+  
 
   // ================= LOGIN =================
   const handleLogin = (e) => {
@@ -452,6 +619,9 @@ function App() {
     fetchAttendance();
     fetchLeaveRequests();
     fetchOrders();
+    fetchPayroll();
+    fetchProjects();
+    fetchNotifications();
   }, []);
 
   // ================= DERIVED DATA =================
@@ -502,6 +672,11 @@ function App() {
     0
   );
 
+  const totalPayrollAmount = payrollRecords.reduce(
+    (sum, record) => sum + Number(record.netSalary),
+    0
+  );
+
   const sortedEmployees = [...employees]
     .filter(
       (emp) =>
@@ -540,6 +715,9 @@ function App() {
             <li onClick={() => setPage("reports")}>Reports</li>
             <li onClick={() => setPage("leave")}>Leave</li>
             <li onClick={() => setPage("orders")}>Orders</li>
+            <li onClick={() => setPage("payroll")}>Payroll</li>
+            <li onClick={() => setPage("projects")}>Projects</li>
+            <li onClick={() => setPage("notifications")}>Notifications</li>
           </ul>
 
           <button className="logout-btn" onClick={() => setIsLoggedIn(false)}>
@@ -559,9 +737,9 @@ function App() {
                 <div className="card">Low Stock: {lowStockProducts.length}</div>
                 <div className="card">Present Today: {presentCountToday}</div>
                 <div className="card">Pending Leaves: {pendingLeaves}</div>
-                <div className="card">
-                  Sales: ₹{totalSalesAmount.toFixed(2)}
-                </div>
+                <div className="card">Payroll: ₹{totalPayrollAmount.toFixed(2)}</div>
+                <div className="card">Notifications: {notifications.length}</div>
+                <div className="card">Sales: ₹{totalSalesAmount.toFixed(2)}</div>
               </div>
 
               <div className="section-box">
@@ -582,17 +760,45 @@ function App() {
 
               <div className="section-box">
                 <h2>Quick Summary</h2>
-                <p>Total Stock Units: {totalStockUnits}</p>
-                <p>Inventory Value: ₹{totalInventoryValue.toFixed(2)}</p>
-                <p>Approved Leaves: {approvedLeaves}</p>
-                <p>Average Product Price: ₹{averageProductPrice}</p>
+                <div className="summary-grid">
+                  <div className="summary-item">Total Stock Units: {totalStockUnits}</div>
+                  <div className="summary-item">
+                    Inventory Value: ₹{totalInventoryValue.toFixed(2)}
+                  </div>
+                  <div className="summary-item">Approved Leaves: {approvedLeaves}</div>
+                  <div className="summary-item">
+                    Average Product Price: ₹{averageProductPrice}
+                  </div>
+                </div>
               </div>
+            </>
+          )}
+
+          {page === "notifications" && (
+            <>
+              <h1>Notifications</h1>
+              <p className="page-note">Review important system alerts and recent updates.</p>
+
+              {notifications.length === 0 ? (
+                <p className="empty-text">No notifications found.</p>
+              ) : (
+                <div className="section-box">
+                  <ul className="alert-list">
+                    {notifications.map((item, index) => (
+                      <li key={index}>
+                        <strong>{item.type}:</strong> {item.message}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </>
           )}
 
           {page === "employees" && (
             <>
               <h1>Employees</h1>
+              <p className="page-note">Manage employee records, roles, and updates.</p>
 
               <input
                 className="search-box"
@@ -662,6 +868,7 @@ function App() {
           {page === "products" && (
             <>
               <h1>Products / Inventory</h1>
+              <p className="page-note">Track stock, pricing, and reorder levels.</p>
 
               <input
                 className="search-box"
@@ -757,6 +964,7 @@ function App() {
           {page === "attendance" && (
             <>
               <h1>Attendance</h1>
+              <p className="page-note">Mark and review daily employee attendance.</p>
 
               <div className="form-row inventory-form">
                 <select
@@ -823,6 +1031,7 @@ function App() {
           {page === "reports" && (
             <>
               <h1>Reports</h1>
+              <p className="page-note">View business summaries and operational insights.</p>
 
               <div className="cards">
                 <div className="card">Total Employees: {employees.length}</div>
@@ -909,6 +1118,7 @@ function App() {
           {page === "leave" && (
             <>
               <h1>Leave Management</h1>
+              <p className="page-note">Create and manage employee leave requests.</p>
 
               <div className="form-row inventory-form">
                 <select
@@ -999,6 +1209,7 @@ function App() {
           {page === "orders" && (
             <>
               <h1>Orders / Sales</h1>
+              <p className="page-note">Create sales orders and track product movement.</p>
 
               <div className="form-row inventory-form">
                 <select
@@ -1051,6 +1262,158 @@ function App() {
                         <td>{new Date(order.orderDate).toLocaleDateString()}</td>
                         <td>
                           <button onClick={() => deleteOrder(order.id)}>
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </>
+          )}
+          {page === "projects" && (
+  <>
+    <h1>Project Management</h1>
+    <p className="page-note">Manage projects, budgets and status.</p>
+
+    <div className="form-row inventory-form">
+      <input
+        placeholder="Project Name"
+        value={projectName}
+        onChange={(e) => setProjectName(e.target.value)}
+      />
+
+      <input
+        placeholder="Description"
+        value={projectDesc}
+        onChange={(e) => setProjectDesc(e.target.value)}
+      />
+
+      <input
+        type="number"
+        placeholder="Budget"
+        value={projectBudget}
+        onChange={(e) => setProjectBudget(e.target.value)}
+      />
+
+      <select
+        value={projectStatus}
+        onChange={(e) => setProjectStatus(e.target.value)}
+      >
+        <option value="Planned">Planned</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Completed">Completed</option>
+      </select>
+
+      <button onClick={addProject}>Add Project</button>
+    </div>
+
+    {projects.length === 0 ? (
+      <p className="empty-text">No projects found.</p>
+    ) : (
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Budget</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {projects.map((p) => (
+            <tr key={p.id}>
+              <td>{p.name}</td>
+              <td>{p.description}</td>
+              <td>₹{p.budget}</td>
+              <td>{p.status}</td>
+              <td>
+                <button onClick={() => deleteProject(p.id)}>Delete</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )}
+  </>
+)}
+
+          {page === "payroll" && (
+            <>
+              <h1>Payroll</h1>
+              <p className="page-note">Calculate and store salary records for employees.</p>
+
+              <div className="form-row inventory-form">
+                <select
+                  value={payrollEmployeeId}
+                  onChange={(e) => setPayrollEmployeeId(e.target.value)}
+                >
+                  <option value="">Select Employee</option>
+                  {employees.map((emp) => (
+                    <option key={emp.id} value={emp.id}>
+                      {emp.name}
+                    </option>
+                  ))}
+                </select>
+
+                <input
+                  placeholder="Month (e.g. April 2026)"
+                  value={payrollMonth}
+                  onChange={(e) => setPayrollMonth(e.target.value)}
+                />
+
+                <input
+                  type="number"
+                  placeholder="Base Salary"
+                  value={baseSalary}
+                  onChange={(e) => setBaseSalary(e.target.value)}
+                />
+
+                <input
+                  type="number"
+                  placeholder="Bonus"
+                  value={bonus}
+                  onChange={(e) => setBonus(e.target.value)}
+                />
+
+                <input
+                  type="number"
+                  placeholder="Deduction"
+                  value={deduction}
+                  onChange={(e) => setDeduction(e.target.value)}
+                />
+
+                <button onClick={addPayroll}>Add Payroll</button>
+              </div>
+
+              {payrollRecords.length === 0 ? (
+                <p className="empty-text">No payroll records found.</p>
+              ) : (
+                <table border="1" cellPadding="10">
+                  <thead>
+                    <tr>
+                      <th>Employee</th>
+                      <th>Month</th>
+                      <th>Base Salary</th>
+                      <th>Bonus</th>
+                      <th>Deduction</th>
+                      <th>Net Salary</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {payrollRecords.map((record) => (
+                      <tr key={record.id}>
+                        <td>{record.employee?.name}</td>
+                        <td>{record.month}</td>
+                        <td>₹{record.baseSalary}</td>
+                        <td>₹{record.bonus}</td>
+                        <td>₹{record.deduction}</td>
+                        <td>₹{record.netSalary}</td>
+                        <td>
+                          <button onClick={() => deletePayroll(record.id)}>
                             Delete
                           </button>
                         </td>

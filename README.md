@@ -57,6 +57,22 @@ The system provides real-time updates and integrates all modules into a single p
   - Leave summary
   - Sales summary
 
+### 📁 Project Management
+- Create and manage projects
+- Track budget and status
+- Delete projects
+
+## 🔗 API Endpoints
+
+- /employees
+- /products
+- /attendance
+- /leave-requests
+- /orders
+- /payroll
+- /projects
+- /notifications
+- /audit-logs
 ---
 
 ## 🛠️ Technologies Used

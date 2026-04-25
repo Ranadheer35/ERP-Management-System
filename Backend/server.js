@@ -9,6 +9,20 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const logAction = async (action, entity, details) => {
+  try {
+    await prisma.auditLog.create({
+      data: {
+        action,
+        entity,
+        details,
+      },
+    });
+  } catch (err) {
+    console.log("Audit log error:", err);
+  }
+};
+
 // ================= EMPLOYEES APIs =================
 app.get("/employees", async (req, res) => {
   try {
@@ -34,6 +48,9 @@ app.post("/employees", async (req, res) => {
       data: { name, role },
     });
 
+    // ✅ AUDIT LOG
+    await logAction("CREATE", "Employee", `Added ${newEmployee.name}`);
+
     res.json(newEmployee);
   } catch (error) {
     console.error("POST /employees error:", error);
@@ -51,6 +68,9 @@ app.put("/employees/:id", async (req, res) => {
       data: { name, role },
     });
 
+    // ✅ AUDIT LOG
+    await logAction("UPDATE", "Employee", `Updated ${updatedEmployee.name}`);
+
     res.json(updatedEmployee);
   } catch (error) {
     console.error("PUT /employees error:", error);
@@ -66,12 +86,16 @@ app.delete("/employees/:id", async (req, res) => {
       where: { id },
     });
 
+    // ✅ AUDIT LOG
+    await logAction("DELETE", "Employee", `Deleted employee ID ${id}`);
+
     res.json({ message: "Deleted successfully" });
   } catch (error) {
     console.error("DELETE /employees error:", error);
     res.status(500).json({ message: "Failed to delete employee" });
   }
 });
+
 
 // ================= PRODUCTS / INVENTORY APIs =================
 app.get("/products", async (req, res) => {
@@ -379,6 +403,215 @@ app.delete("/orders/:id", async (req, res) => {
   } catch (error) {
     console.error("DELETE /orders error:", error);
     res.status(500).json({ message: "Error deleting order" });
+  }
+});
+
+// ================= PAYROLL APIs =================
+app.get("/payroll", async (req, res) => {
+  try {
+    const payrolls = await prisma.payroll.findMany({
+      include: { employee: true },
+      orderBy: { id: "desc" },
+    });
+    res.json(payrolls);
+  } catch (error) {
+    console.error("GET /payroll error:", error);
+    res.status(500).json([]);
+  }
+});
+
+app.post("/payroll", async (req, res) => {
+  try {
+    const { employeeId, month, baseSalary, bonus, deduction } = req.body;
+
+    if (
+      !employeeId ||
+      !month ||
+      baseSalary === undefined ||
+      bonus === undefined ||
+      deduction === undefined
+    ) {
+      return res.status(400).json({
+        message: "employeeId, month, baseSalary, bonus and deduction are required",
+      });
+    }
+
+    const employee = await prisma.employee.findUnique({
+      where: { id: Number(employeeId) },
+    });
+
+    if (!employee) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+
+    const netSalary =
+      Number(baseSalary) + Number(bonus) - Number(deduction);
+
+    const payroll = await prisma.payroll.create({
+      data: {
+        employeeId: Number(employeeId),
+        month,
+        baseSalary: Number(baseSalary),
+        bonus: Number(bonus),
+        deduction: Number(deduction),
+        netSalary,
+      },
+      include: { employee: true },
+    });
+
+    res.json(payroll);
+  } catch (error) {
+    console.error("POST /payroll error:", error);
+    res.status(500).json({ message: "Error adding payroll" });
+  }
+});
+
+app.delete("/payroll/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    await prisma.payroll.delete({
+      where: { id },
+    });
+
+    res.json({ message: "Payroll deleted successfully" });
+  } catch (error) {
+    console.error("DELETE /payroll error:", error);
+    res.status(500).json({ message: "Error deleting payroll" });
+  }
+});
+
+// ================= PROJECT MANAGEMENT =================
+
+// GET projects
+app.get("/projects", async (req, res) => {
+  try {
+    const projects = await prisma.project.findMany({
+      orderBy: { id: "desc" },
+    });
+    res.json(projects);
+  } catch (error) {
+    console.error("GET /projects error:", error);
+    res.status(500).json([]);
+  }
+});
+
+// ADD project
+app.post("/projects", async (req, res) => {
+  try {
+    const { name, description, budget, status } = req.body;
+
+    if (!name || !description || !budget || !status) {
+      return res.status(400).json({ message: "Fill all fields" });
+    }
+
+    const project = await prisma.project.create({
+      data: {
+        name,
+        description,
+        budget: Number(budget),
+        status,
+      },
+    });
+
+    await logAction("CREATE", "Project", `Added ${project.name}`);
+
+    res.json(project);
+  } catch (error) {
+    console.error("POST /projects error:", error);
+    res.status(500).json({ message: "Error adding project" });
+  }
+});
+
+// DELETE project
+app.delete("/projects/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    await prisma.project.delete({
+      where: { id },
+    });
+
+    await logAction("DELETE", "Project", `Deleted project ID ${id}`);
+
+    res.json({ message: "Deleted successfully" });
+  } catch (error) {
+    console.error("DELETE /projects error:", error);
+    res.status(500).json({ message: "Error deleting project" });
+  }
+});
+
+// ================= NOTIFICATIONS APIs =================
+app.get("/notifications", async (req, res) => {
+  try {
+    const products = await prisma.product.findMany();
+    const leaveRequests = await prisma.leaveRequest.findMany({
+      include: { employee: true },
+    });
+    const payrolls = await prisma.payroll.findMany({
+      include: { employee: true },
+    });
+    const orders = await prisma.order.findMany({
+      include: { product: true },
+      orderBy: { id: "desc" },
+      take: 5,
+    });
+    const employees = await prisma.employee.findMany();
+
+    const notifications = [];
+
+    products.forEach((product) => {
+      if (Number(product.quantity) <= Number(product.reorderLevel)) {
+        notifications.push({
+          type: "Low Stock",
+          message: `${product.name} is low on stock. Qty: ${product.quantity}, Reorder Level: ${product.reorderLevel}`,
+        });
+      }
+    });
+
+    leaveRequests.forEach((leave) => {
+      if (leave.status === "Pending") {
+        notifications.push({
+          type: "Leave Pending",
+          message: `${leave.employee?.name} has a pending ${leave.leaveType} request.`,
+        });
+      }
+    });
+
+    employees.forEach((employee) => {
+      const hasPayroll = payrolls.some((p) => p.employeeId === employee.id);
+      if (!hasPayroll) {
+        notifications.push({
+          type: "Payroll Missing",
+          message: `Payroll record is missing for ${employee.name}.`,
+        });
+      }
+    });
+
+    orders.forEach((order) => {
+      notifications.push({
+        type: "Recent Order",
+        message: `Order placed for ${order.product?.name} - Quantity: ${order.quantity}, Amount: ₹${order.totalAmount}`,
+      });
+    });
+
+    res.json(notifications);
+  } catch (error) {
+    console.error("GET /notifications error:", error);
+    res.status(500).json([]);
+  }
+});
+
+// ================= AUDIT LOG API =================
+app.get("/audit-logs", async (req, res) => {
+  try {
+    const logs = await prisma.auditLog.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+    res.json(logs);
+  } catch (error) {
+    console.error("Audit log fetch error:", error);
+    res.status(500).json([]);
   }
 });
 
